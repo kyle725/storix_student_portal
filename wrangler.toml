@@ -18,7 +18,7 @@ database_id  = "d06d11c2-8ef4-4d9e-ba34-932f9fa7222e"
 [vars]
 # Set this to your Cloudflare Pages URL.
 # During local testing you may set it to "*" temporarily.
-PORTAL_ORIGIN = "https://storix-worker.conplpconsult.workers.dev/"
+PORTAL_ORIGIN = "https://storixstudentportal.conplpconsult.workers.dev/"
 
 # SYNC_SECRET is sensitive — set it as a secret, not a plain var:
 #   wrangler secret put SYNC_SECRET

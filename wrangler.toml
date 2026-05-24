@@ -1,0 +1,30 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Storix — Cloudflare Worker configuration
+# Deploy with: wrangler deploy
+# ─────────────────────────────────────────────────────────────────────────────
+
+name            = "storix-worker"
+main            = "worker.js"
+compatibility_date = "2024-09-23"
+
+# ── D1 Database binding ───────────────────────────────────────────────────────
+# After running `wrangler d1 create storix-d1`, paste the database_id below.
+[[d1_databases]]
+binding      = "DB"            # referenced as env.DB in worker.js
+database_name = "storix-d1"
+database_id  = "d06d11c2-8ef4-4d9e-ba34-932f9fa7222e"
+
+# ── Environment variables ─────────────────────────────────────────────────────
+[vars]
+# Set this to your Cloudflare Pages URL.
+# During local testing you may set it to "*" temporarily.
+PORTAL_ORIGIN = "https://storix-worker.conplpconsult.workers.dev/"
+
+# SYNC_SECRET is sensitive — set it as a secret, not a plain var:
+#   wrangler secret put SYNC_SECRET
+# Do NOT put the real value here. This placeholder is just a reminder.
+# SYNC_SECRET = "set-via-wrangler-secret"
+
+# ── Local development ─────────────────────────────────────────────────────────
+# Run locally with: wrangler dev
+# This will use a local D1 replica automatically.

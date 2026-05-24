@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Portal — Storix</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #0b7b6b; --teal-dark: #085f53; --teal-lite: #e0f2f0;
+      --amber: #d97706; --amber-lite: #fef3c7;
+      --red: #dc2626; --red-lite: #fee2e2;
+      --gray: #6b7c93; --surface: #f0f4f8; --card: #ffffff;
+      --border: #dde3ea; --text: #1a2332; --text-muted: #8899aa;
+      --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar {
+      background: linear-gradient(135deg, var(--teal) 0%, #0d9175 100%);
+      color: #fff; padding: 0 20px; height: 62px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 16px rgba(11,123,107,0.28);
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 11px; }
+    .topbar-logo {
+      width: 34px; height: 34px; background: rgba(255,255,255,0.18);
+      border-radius: 9px; display: grid; place-items: center; position: relative; flex-shrink: 0;
+    }
+    .topbar-logo::before { content:''; position:absolute; background:#fff; width:3px; height:16px; border-radius:2px; }
+    .topbar-logo::after  { content:''; position:absolute; background:#fff; width:16px; height:3px; border-radius:2px; }
+    .topbar-name { font-family: 'DM Serif Display', serif; font-size: 19px; letter-spacing: -.3px; }
+    .topbar-sub  { font-size: 11px; opacity: 0.72; margin-top: 1px; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #4ade80; display: inline-block; margin-right: 5px;
+      transition: background .3s;
+    }
+    .status-dot.offline { background: #f87171; }
+    .status-text { font-size: 11.5px; opacity: .85; }
+
+    /* TABS */
+    .tab-bar {
+      background: var(--card); border-bottom: 2px solid var(--border);
+      display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 20px;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      padding: 15px 20px; font-size: 13.5px; font-weight: 500;
+      color: var(--gray); cursor: pointer; border: none; background: none;
+      border-bottom: 2px solid transparent; white-space: nowrap;
+      transition: all .18s; font-family: 'DM Sans', sans-serif; margin-bottom: -2px;
+    }
+    .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); font-weight: 600; }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+
+    /* MAIN */
+    .main { max-width: 860px; margin: 0 auto; padding: 28px 16px 56px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* FLASH */
+    .flashes { margin-bottom: 20px; }
+    .flash {
+      padding: 12px 18px; border-radius: var(--radius); font-size: 14px;
+      font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+      animation: slideIn .25s ease;
+    }
+    @keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    .flash-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .flash-error   { background: var(--red-lite); color: var(--red); border: 1px solid #fca5a5; }
+
+    /* CARD */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+    .card-header {
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .card-header .icon {
+      width: 40px; height: 40px; background: var(--teal-lite);
+      border-radius: 10px; display: grid; place-items: center;
+      font-size: 19px; flex-shrink: 0;
+    }
+    .card-header h3 { font-size: 15.5px; font-weight: 600; }
+    .card-header p  { font-size: 12.5px; color: var(--gray); margin-top: 3px; }
+    .card-body { padding: 24px; }
+
+    /* FORMS */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-size: 11.5px; font-weight: 600; color: var(--gray);
+      text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    label .req { color: var(--red); }
+    input, select, textarea {
+      width: 100%; padding: 10px 13px; border: 1.5px solid var(--border);
+      border-radius: 9px; font-size: 14px; font-family: 'DM Sans', sans-serif;
+      color: var(--text); background: #fff; transition: border-color .18s, box-shadow .18s; outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--teal); box-shadow: 0 0 0 3px rgba(11,123,107,.1);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .btn-submit {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--teal); color: #fff; padding: 12px 24px;
+      border-radius: 9px; font-size: 14.5px; font-weight: 600; border: none;
+      cursor: pointer; width: 100%; margin-top: 8px;
+      transition: background .18s, transform .12s, box-shadow .18s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--teal-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(11,123,107,.25); }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* INFO BANNER */
+    .info-banner {
+      background: var(--teal-lite); border: 1px solid #a7e8e0; border-radius: 9px;
+      padding: 11px 15px; font-size: 12.5px; color: var(--teal-dark);
+      display: flex; align-items: flex-start; gap: 9px; line-height: 1.55;
+    }
+    .info-banner-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+    /* INVENTORY TABLE */
+    .search-bar { margin-bottom: 16px; }
+    .search-bar input { padding: 10px 14px; }
+    .item-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .item-table th {
+      background: var(--surface); padding: 10px 14px; text-align: left;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.7px;
+      text-transform: uppercase; color: var(--gray); border-bottom: 1px solid var(--border);
+    }
+    .item-table td { padding: 12px 14px; border-bottom: 1px solid #f0f4f8; vertical-align: middle; }
+    .item-table tr:last-child td { border-bottom: none; }
+    .item-table tr:hover td { background: #f7faf9; }
+    .avail-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .avail-ok    { background: #d1fae5; color: #065f46; }
+    .avail-low   { background: var(--amber-lite); color: var(--amber); }
+    .avail-none  { background: var(--red-lite); color: var(--red); }
+    .avail-maint { background: #f3f4f6; color: #6b7280; }
+
+    /* SKELETON LOADER */
+    .skeleton {
+      background: linear-gradient(90deg, #e8ecf2 25%, #f5f7fa 50%, #e8ecf2 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+      border-radius: 6px; height: 16px; margin-bottom: 10px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 44px 20px; color: var(--text-muted); }
+    .empty .icon { font-size: 36px; margin-bottom: 12px; opacity: .7; }
+    .empty p { font-size: 14px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo"></div>
+    <div>
+      <div class="topbar-name">Storix</div>
+      <div class="topbar-sub">Student Portal</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <span class="status-dot" id="statusDot"></span>
+    <span class="status-text" id="statusText">Connecting…</span>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('borrow', this)">📋 Borrow Item</button>
+  <button class="tab-btn" onclick="switchTab('inventory', this)">🗂 View Inventory</button>
+</div>
+
+<main class="main">
+
+  <div class="flashes" id="flashBox"></div>
+
+  <!-- TAB 1: BORROW -->
+  <div id="panel-borrow" class="tab-panel active">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon">📋</div>
+        <div>
+          <h3>Request to Borrow an Item</h3>
+          <p>Fill out this form to submit a loan request. An admin will review and approve it.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="borrowLoading">
+          <div class="skeleton" style="width:60%;height:14px;"></div>
+          <div class="skeleton" style="width:100%;height:40px;margin-bottom:16px;"></div>
+          <div class="skeleton" style="width:40%;height:14px;"></div>
+          <div class="skeleton" style="width:100%;height:40px;"></div>
+        </div>
+        <form id="borrowForm" style="display:none;" onsubmit="submitLoan(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Full Name <span class="req">*</span></label>
+              <input type="text" name="student_name" placeholder="e.g. Juan dela Cruz" required>
+            </div>
+            <div class="form-group">
+              <label>Student ID <span class="req">*</span></label>
+              <input type="text" name="student_id" placeholder="e.g. 2024-0001" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address <span class="req">*</span></label>
+              <input type="email" name="student_email" placeholder="e.g. juan@email.com" required>
+            </div>
+            <div class="form-group">
+              <label>Contact Number</label>
+              <input type="text" name="student_contact" placeholder="e.g. 09XX-XXX-XXXX">
+            </div>
+            <div class="form-group full" style="margin-top:-4px;">
+              <div class="info-banner">
+                <span class="info-banner-icon">📧</span>
+                <span>Your email is required. Your loan approval and certificate will be sent to this address automatically.</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Item to Borrow <span class="req">*</span></label>
+              <select name="item_id" id="itemSelect" required>
+                <option value="">— Select an item —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Quantity <span class="req">*</span></label>
+              <input type="number" name="quantity" value="1" min="1" required>
+            </div>
+            <div class="form-group full">
+              <label>Needed Until (Due Date)</label>
+              <input type="date" name="due_date" id="dueDateInput">
+            </div>
+            <div class="form-group full">
+              <label>Purpose / Reason <span class="req">*</span></label>
+              <textarea name="purpose" placeholder="Briefly describe why you need this item..." required></textarea>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="borrowBtn">📤 Submit Loan Request</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: INVENTORY -->
+  <div id="panel-inventory" class="tab-panel">
+    <div class="card">
+      <div class="card-header">
+        <div class="icon">🗂</div>
+        <div>
+          <h3>Available Inventory</h3>
+          <p>Browse all items currently in the system.</p>
+        </div>
+      </div>
+      <div class="card-body" style="padding-bottom: 0;">
+        <div class="search-bar">
+          <input type="text" id="invSearch" placeholder="🔍  Search items..." oninput="filterInventory()">
+        </div>
+        <div id="invLoading">
+          <div class="skeleton" style="height:36px;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:36px;margin-bottom:8px;"></div>
+          <div class="skeleton" style="height:36px;margin-bottom:8px;"></div>
+        </div>
+        <div id="invTableWrap" style="display:none;overflow-x:auto;">
+          <table class="item-table" id="invTable">
+            <thead>
+              <tr>
+                <th>Item</th><th>Category</th><th>Location</th><th>Available</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="invBody"></tbody>
+          </table>
+        </div>
+        <div id="invEmpty" class="empty" style="display:none;padding-top:20px;">
+          <div class="icon">📦</div>
+          <p>No items in inventory yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ── CONFIG ────────────────────────────────────────────────────────────────
+  // Replace this with your actual Worker URL after deploying.
+  // e.g. "https://storix-worker.your-account.workers.dev"
+  const WORKER_URL = "https://storix-worker.YOUR_ACCOUNT.workers.dev";
+
+  // ── STATE ─────────────────────────────────────────────────────────────────
+  let allItems = [];
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", () => {
+    // Set today as min date for due date input
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("dueDateInput").min = today;
+
+    // Redirect hash
+    if (location.hash === "#inventory") {
+      switchTab("inventory", document.querySelectorAll(".tab-btn")[1]);
+    }
+
+    checkPing();
+    loadItems();
+  });
+
+  // ── PING / STATUS ─────────────────────────────────────────────────────────
+  async function checkPing() {
+    const dot  = document.getElementById("statusDot");
+    const text = document.getElementById("statusText");
+    try {
+      const r = await fetch(`${WORKER_URL}/api/ping`);
+      if (r.ok) {
+        dot.classList.remove("offline");
+        text.textContent = "Portal online";
+      } else {
+        throw new Error();
+      }
+    } catch {
+      dot.classList.add("offline");
+      text.textContent = "Portal offline";
+    }
+  }
+
+  // ── LOAD ITEMS ────────────────────────────────────────────────────────────
+  async function loadItems() {
+    try {
+      const r    = await fetch(`${WORKER_URL}/api/items`);
+      const data = await r.json();
+
+      if (!data.ok) throw new Error("API error");
+
+      allItems = data.items;
+      populateItemSelect(allItems);
+      populateInventoryTable(allItems);
+    } catch (err) {
+      showFlash("error", "Could not load inventory. Please try again later.");
+      document.getElementById("borrowLoading").innerHTML =
+        '<p style="color:var(--red);font-size:14px;">⚠️ Could not load items — please refresh the page.</p>';
+      document.getElementById("invLoading").innerHTML =
+        '<p style="color:var(--red);font-size:14px;">⚠️ Could not load inventory.</p>';
+    }
+  }
+
+  function populateItemSelect(items) {
+    const sel = document.getElementById("itemSelect");
+    sel.innerHTML = '<option value="">— Select an item —</option>';
+    const borrowable = items.filter(i => i.borrowable);
+    borrowable.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = `${item.name} (${item.available} available)`;
+      sel.appendChild(opt);
+    });
+    document.getElementById("borrowLoading").style.display = "none";
+    document.getElementById("borrowForm").style.display = "";
+  }
+
+  function populateInventoryTable(items) {
+    document.getElementById("invLoading").style.display = "none";
+    if (!items.length) {
+      document.getElementById("invEmpty").style.display = "";
+      return;
+    }
+    const tbody = document.getElementById("invBody");
+    tbody.innerHTML = "";
+    items.forEach(item => {
+      const badgeClass =
+        ["Under Maintenance","Damaged","Lost"].includes(item.status) ? "avail-maint" :
+        item.status === "Out of Stock"  ? "avail-none" :
+        item.status === "Low Stock"     ? "avail-low"  : "avail-ok";
+
+      const tr = document.createElement("tr");
+      tr.dataset.name = item.name.toLowerCase();
+      tr.innerHTML = `
+        <td style="font-weight:600;">${esc(item.name)}</td>
+        <td>${esc(item.category)}</td>
+        <td>${esc(item.location)}</td>
+        <td>${item.available} / ${item.total}</td>
+        <td><span class="avail-badge ${badgeClass}">${esc(item.status)}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById("invTableWrap").style.display = "";
+  }
+
+  // ── SUBMIT LOAN ───────────────────────────────────────────────────────────
+  async function submitLoan(e) {
+    e.preventDefault();
+    const form = e.target;
+    const btn  = document.getElementById("borrowBtn");
+
+    const payload = {
+      student_name:    form.student_name.value.trim(),
+      student_id:      form.student_id.value.trim(),
+      student_email:   form.student_email.value.trim(),
+      student_contact: form.student_contact.value.trim(),
+      item_id:         parseInt(form.item_id.value, 10),
+      quantity:        parseInt(form.quantity.value, 10),
+      due_date:        form.due_date.value || null,
+      purpose:         form.purpose.value.trim(),
+    };
+
+    btn.disabled    = true;
+    btn.textContent = "⏳ Submitting…";
+
+    try {
+      const r    = await fetch(`${WORKER_URL}/api/request`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload),
+      });
+      const data = await r.json();
+
+      if (data.ok) {
+        showFlash("success",
+          `✅ Request submitted for "${data.item}" × ${data.quantity}. An admin will review it shortly.`);
+        form.reset();
+        // Reload items so available counts are fresh
+        loadItems();
+      } else {
+        const msgs = (data.errors || ["Submission failed."]).join(" ");
+        showFlash("error", `⚠️ ${msgs}`);
+      }
+    } catch {
+      showFlash("error", "⚠️ Network error — please check your connection and try again.");
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = "📤 Submit Loan Request";
+    }
+  }
+
+  // ── INVENTORY SEARCH ──────────────────────────────────────────────────────
+  function filterInventory() {
+    const q = document.getElementById("invSearch").value.toLowerCase();
+    document.querySelectorAll("#invBody tr").forEach(row => {
+      row.style.display = row.dataset.name.includes(q) ? "" : "none";
+    });
+  }
+
+  // ── TAB SWITCHING ─────────────────────────────────────────────────────────
+  function switchTab(name, btn) {
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("panel-" + name).classList.add("active");
+    btn.classList.add("active");
+  }
+
+  // ── FLASH MESSAGES ────────────────────────────────────────────────────────
+  function showFlash(type, msg) {
+    const box  = document.getElementById("flashBox");
+    const el   = document.createElement("div");
+    el.className = `flash flash-${type}`;
+    el.textContent = msg;
+    box.appendChild(el);
+    // Scroll to top so flash is visible
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      el.style.transition = "opacity 0.4s";
+      el.style.opacity = "0";
+      setTimeout(() => el.remove(), 400);
+    }, 7000);
+  }
+
+  // ── HTML ESCAPE ───────────────────────────────────────────────────────────
+  function esc(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+</script>
+</body>
+</html>
